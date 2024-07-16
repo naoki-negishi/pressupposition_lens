@@ -1,0 +1,24 @@
+services:
+  pres_lens:
+    container_name: pres_lens
+    build: .
+    volumes:
+      # - type: bind
+      #   source: "/work01/negishi_naoki/pres_lens/data"
+      #   target: "/workspace/work01_pres_lens"
+      - type: bind
+        source: "${HOME}/pres_lens"
+        target: "/workspace/pres_lens"
+      - type: bind
+        source: "${HOME}/.zshrc"
+        target: "/workspace/.zshrc"
+    tty: true
+    shm_size: '2gb'
+    environment:
+      HOST_USERNAME: ${HOST_USERNAME}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]

@@ -1,0 +1,6 @@
+output_dir: "pres_lens/outputs/test1"
+
+model_name: "EleutherAI/gpt-j-6b"
+# sample_text: "John believes that the earth is flat. He is a member of the Flat Earth Society. He is also"
+sample_text: "Paris is located in the country of"
+subj_pos: 0
