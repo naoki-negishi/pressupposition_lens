@@ -3,12 +3,15 @@ services:
     container_name: pres_lens
     build: .
     volumes:
-      # - type: bind
-      #   source: "/work01/negishi_naoki/pres_lens/data"
-      #   target: "/workspace/work01_pres_lens"
       - type: bind
         source: "${HOME}/pres_lens"
         target: "/workspace/pres_lens"
+      - type: bind
+        source: "/work01/negishi_naoki/pres_lens/data"
+        target: "/workspace/pres_lens/data"
+      - type: bind
+        source: "/work01/negishi_naoki/pres_lens/outputs"
+        target: "/workspace/pres_lens/outputs"
       - type: bind
         source: "${HOME}/.zshrc"
         target: "/workspace/.zshrc"

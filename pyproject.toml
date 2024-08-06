@@ -37,6 +37,7 @@ torch = {version = "^2.0.1+cu118", source = "torch_cu118"}
 torchvision = {version = "^0.15.2+cu118", source = "torch_cu118"}
 torchaudio = {version = "^2.0.2+cu118", source = "torch_cu118"}
 dataclasses-json = "^0.6.7"
+sentence-transformers = "^3.0.1"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "6.0.0"

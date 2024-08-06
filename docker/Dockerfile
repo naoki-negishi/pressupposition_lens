@@ -19,6 +19,7 @@ RUN apt-get -y update \
 && apt-get install -y tmux \
 && apt-get install -y curl \
 && apt-get install -y wget \
+&& apt-get install -y unzip \
 && apt-get install -y rsync \
 && apt-get install -y tree \
 && apt-get install -y lsb-release
@@ -30,8 +31,8 @@ RUN apt-get -y update \
 ENV HOME="/workspace"
 ENV LANG="en_US.UTF-8"
 # add path to use poetry
-ENV PATH="/workspace/.local/bin:$PATH"
-ENV PYTHONPATH "${PYTHONPATH}:/workspace/pres_lens"
+ENV PATH="$PATH:/workspace/.local/bin"
+ENV PYTHONPATH="$PYTHONPATH:/workspace/pres_lens"
 
 COPY entrypoint.sh /workspace/entrypoint.sh
 COPY setting.sh /workspace/setting.sh

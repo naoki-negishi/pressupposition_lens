@@ -1,0 +1,14 @@
+wandb_project: "pres_lens"
+wandb_run_name: "test1"
+
+seed: 42
+output_dir: "pres_lens/outputs/test1"
+
+model_name: "all-MiniLM-L6-v2"
+trigger_type: "change_of_state"
+train_data: "data/IMPPRES/presupposition/change_of_state.jsonl"
+train_batch_size: 8
+dev_batch_size: 8
+num_epochs: 10
+loss_function: "CE"
+learning_rate: 2e-5
