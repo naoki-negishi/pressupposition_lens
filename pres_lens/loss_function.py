@@ -1,54 +1,101 @@
 # Standard Library
-from typing import Callable
+from abc import ABC, abstractmethod
 
 # Third Party Library
 import torch
 from torch import nn
 
 
-class LossFunctionForLPE:
-    loss_function: Callable[[torch.Tensor, torch.Tensor], float]
+class LossFunction(ABC):
+    def __init__(self):
+        pass
 
-    def __init__(self, loss_function: str):
-        if loss_function == "CE":
-            loss = nn.CrossEntropyLoss()
-            self.loss_function = self.ce(loss)
-        # elif loss_function == "contrastive":
-        #     self.loss_function = contrastive
-        # elif loss_function == "triplet":
-        #     self.loss_function = triplet
-        # elif loss_function == "batch_all_triplet":
-            # self.loss_function = batch_all_triplet
-        # elif loss_function == "KL":
-        #     self.loss_function = kl
-        else:
-            raise ValueError(f"Invalid loss function: {loss_function}")
+    def __call__(
+        self, inputs: torch.Tensor, targets: torch.Tensor, labels: torch.Tensor
+    ) -> float:
+        return self.compute_loss(inputs, targets, labels)
 
-    def __call__(self, y: torch.Tensor, z: torch.Tensor) -> float:
-        assert y.shape == z.shape
-        loss = self.loss_function(y, z)
+    @abstractmethod
+    def compute_loss(self, *args, **kwargs) -> float:
+        pass
+
+
+class ContrastiveLoss(LossFunction):
+    def __init__(self):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = 0.0
+        self.cos_emb_loss = nn.CosineEmbeddingLoss(
+            margin=self.margin, reduction="mean"
+        )
+
+    def compute_loss(
+        self, inputs: torch.Tensor, targets: torch.Tensor, labels: torch.Tensor
+    ) -> float:
+        # inputs.shape == targets.shape == [batch_size, embedding_dim]
+        # label.shape == [batch_size]
+        assert inputs.shape == targets.shape
+        loss = self.cos_emb_loss(inputs, targets, labels)
 
         return loss
 
-    def ce(self, ce_loss_func):
-        # loss = th.nn.functional.cross_entropy(
-        #     logits.flatten(0, -2), labels.flatten()
-        # )
-        return ce_loss_func
 
-    def contrastive(y: torch.Tensor, z: torch.Tensor) -> float:
-        pass
+class TripletLoss(nn.Module):
+    def __init__(self):
+        super(TripletLoss, self).__init__()
+        self.triplet_loss = nn.TripletMarginWithDistanceLoss(
+            distance_function=lambda x, y: 1 - nn.CosineSimilarity()(x, y),
+            margin=1,
+        )
 
-    def triplet(y: torch.Tensor, z: torch.Tensor) -> float:
-        pass
+    def loss_function(
+        self,
+        inputs: torch.Tensor,
+        targets: torch.Tensor,
+        labels: torch.Tensor
+    ) -> torch.Tensor:
+        positives = inputs[labels == 1]
+        negatives = inputs[labels == -1]
 
-    def batch_all_triplet(y: torch.Tensor, z: torch.Tensor) -> float:
-        pass
+        assert inputs.shape == positives.shape == negatives.shape
+        loss = self.triplet_loss(inputs, positives, negatives)
 
-    # def kl(y: torch.Tensor, z: torch.Tensor) -> float:
-    #     labels = final_logits.float().log_softmax(dim=-1)
-    #     loss = th.sum(
-    #         labels.exp() * (labels - logits.log_softmax(-1)), dim=-1
-    #     ).mean()
-    #
-    #     return loss
+        return loss
+
+
+class BatchAllTripletLoss(nn.Module):
+    def __init__(self):
+        super(BatchAllTripletLoss, self).__init__()
+
+    def loss_function(self, y: torch.Tensor, z: torch.Tensor) -> float:
+        return None
+
+
+class MSELoss(LossFunction):
+    def __init__(self):
+        super(MSELoss, self).__init__()
+        self.mse_loss = nn.MSELoss()
+
+    def compute_loss(
+        self,
+        inputs: torch.Tensor,
+        targets: torch.Tensor,
+        labels: torch.Tensor
+    ) -> torch.Tensor:
+        assert inputs.shape == targets.shape
+        loss = self.mse_loss(inputs, targets)
+
+        return loss
+
+
+def get_loss_func(loss_type: str) -> LossFunction:
+    if loss_type == "contrastive":
+        return ContrastiveLoss()
+    elif loss_type == "triplet":
+        return TripletLoss()
+    elif loss_type == "batch_all_triplet":
+        raise NotImplementedError
+        return BatchAllTripletLoss()
+    elif loss_type == "mse":
+        return MSELoss()
+    else:
+        raise ValueError(f"Invalid loss function: {loss_type}")
